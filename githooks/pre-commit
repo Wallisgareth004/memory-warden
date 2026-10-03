@@ -1,0 +1,12 @@
+#!/bin/sh
+# The guard's pre-commit gate (secrets + append-only). Install in a repo with:
+#   git config core.hooksPath /path/to/this/githooks
+# It fails closed: if no Python 3.11+ runs it, the commit is blocked.
+here="$(cd "$(dirname "$0")/.." && pwd)"
+for py in python3 /opt/homebrew/bin/python3 /usr/local/bin/python3 /usr/bin/python3; do
+  if command -v "$py" >/dev/null 2>&1 && "$py" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then
+    PYTHONPATH="$here" exec "$py" -m guard gate
+  fi
+done
+echo "guard gate: no Python 3.11+ found: commit blocked (fail-closed)"
+exit 1

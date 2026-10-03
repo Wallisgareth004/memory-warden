@@ -1,0 +1,25 @@
+{
+ "calls": 2000,
+ "allowed": 1647,
+ "denied": 353,
+ "expected_denials": 353,
+ "false_positives": [],
+ "false_negatives": [],
+ "latency_ms": {
+  "in_process": {
+   "p50": 0.29,
+   "p95": 0.78,
+   "n": 2000
+  },
+  "hook_py": {
+   "p50": 26.92,
+   "p95": 27.85,
+   "n": 100
+  },
+  "python_startup": {
+   "p50": 15.61,
+   "p95": 16.01,
+   "n": 100
+  }
+ }
+}

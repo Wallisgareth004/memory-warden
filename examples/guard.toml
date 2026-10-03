@@ -1,0 +1,30 @@
+# guard.toml: memory integrity for a multi-agent Claude Code setup.
+# Put it at ~/.config/guard/guard.toml (or point GUARD_CONFIG at it).
+# Every root must be absolute or start with ~/ ; `*` matches within one folder.
+
+[roots]
+# Subagents may not write here (the main thread may). Folders cover everything below them.
+protected   = ["~/vault/memory", "~/vault/hubs", "~/.claude/projects/*/memory/MEMORY.md"]
+# Files that may only grow: appends are fine, anything else is caught.
+append_only = ["~/vault/memory/daily-log.md"]
+# Where subagents may write: a quarantine inbox for their findings.
+allow       = ["~/vault/inbox"]
+# Extra folders the effect check watches for changes nobody predicted (opt-in).
+watch       = []
+
+[policy]
+subagents = "deny"            # writes to protected roots: deny (never "ask": it doesn't hold in every mode)
+main = "allow"                # the main thread writes freely; the effect check still records it
+agent_types_allowed = []      # e.g. ["memory-curator"] may write protected roots
+case_insensitive = "auto"     # probe the filesystem (macOS: usually true)
+
+[alerts]
+sinks = ["log", "macos-notify"]   # log | stderr | macos-notify | linux-notify | webhook (+ webhook_url)
+
+[tripwire]
+poll_seconds = 1
+settle_seconds = 2
+drop_line_patterns = []       # lines never restored (regex), e.g. a known junk marker
+
+[state]
+dir = "~/.local/state/guard"  # owner-only; evidence and quarantine kept 30 days

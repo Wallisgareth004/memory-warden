@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# The full suite. Every test runs on synthetic fixtures in temp folders.
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$here"
+cd "$here"
+exec uv run --quiet --no-project --python 3.14 --with-requirements requirements-dev.txt python -m pytest -p no:cacheprovider -q "$@"

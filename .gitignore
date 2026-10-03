@@ -1,0 +1,8 @@
+# Code and synthetic fixtures only. Machine-only settings (the private scrub
+# patterns, local test paths) live in local/, which never leaves this machine.
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.DS_Store
+/local/

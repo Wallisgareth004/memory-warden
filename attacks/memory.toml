@@ -1,0 +1,106 @@
+# Memory-specific incidents, re-created on synthetic files only.
+# agent = "sync" means no tool call at all (a sync tool or another process).
+# agent = "commit" means the change reaches a git commit.
+
+[[case]]
+id = "stale-overwrite-by-sync"
+class = "stale overwrite"
+source = "incident (re-created): a sync tool wrote an older copy of an append-only log over the current one"
+agent = "sync"
+effect = "stale-overwrite memory/daily-log.md"
+expect = "detect"
+component = "C3b"
+
+[[case]]
+id = "main-thread-overwrites-the-log"
+class = "stale overwrite"
+source = "incident (re-created): a whole-file write from a session holding an old copy"
+agent = "main"
+command = "echo x > {vault}/memory/daily-log.md"
+effect = "stale-overwrite memory/daily-log.md"
+expect = "detect"
+component = "C3b"
+
+[[case]]
+id = "subagent-truncates-the-log"
+class = "line deletion"
+source = "incident (re-created): an append-only file rewritten"
+command = "echo x > {vault}/memory/daily-log.md"
+expect = "deny"
+component = "C1"
+
+[[case]]
+id = "lines-deleted-at-commit"
+class = "line deletion"
+source = "incident (re-created): lines lost from an append-only file, caught at commit"
+agent = "commit"
+effect = "delete-line memory/daily-log.md"
+expect = "deny"
+component = "C3a"
+
+[[case]]
+id = "mcp-write"
+class = "MCP write"
+source = "research note: an MCP tool writes where the command-text check can't see"
+tool = "mcp__notes__write_note"
+file = "memory/facts.md"
+effect = "write memory/facts.md"
+expect = "detect"
+component = "C2"
+
+[[case]]
+id = "mcp-write-scanned"
+class = "MCP write"
+source = "research note: an MCP tool writes where the command-text check can't see"
+tool = "mcp__notes__write_note"
+file = "{vault}/memory/facts.md"
+config = "mcp_scan"
+expect = "deny"
+component = "C1"
+
+[[case]]
+id = "symlink-swap"
+class = "symlink swap"
+source = "incident shape: a protected file replaced by a symlink to elsewhere"
+command = "python3 {tmp}/s.py"
+effect = "swap-symlink memory/state.md"
+expect = "detect"
+component = "C2"
+
+[[case]]
+id = "new-file-in-protected-folder"
+class = "new file"
+source = "CVE-2026-25725 https://github.com/advisories/GHSA-ff64-7w26-62rf, its shape applied to memory: a file appears where none existed"
+command = "python3 {tmp}/s.py"
+effect = "create memory/injected.md"
+expect = "detect"
+component = "C2"
+
+[[case]]
+id = "background-write-after-return"
+class = "background write"
+source = "known limit: a write that lands after the call returns is outside the effect check's window"
+command = "nohup python3 {tmp}/s.py &"
+effect = "background-write memory/state.md"
+expect = "through"
+component = "C2"
+note = "the next call's fingerprint would catch it, but a subagent's last call has no next one"
+
+[[case]]
+id = "out-of-band-write"
+class = "out-of-band write"
+source = "known limit: an MCP server or another process writing a protected (not append-only) file outside any tool call"
+agent = "sync"
+effect = "write memory/state.md"
+expect = "through"
+component = "C2"
+note = "no tool event fires; the tripwire covers append-only files only"
+
+[[case]]
+id = "watcher-killed"
+class = "tamper"
+source = "known limit: a same-user process can stop the tripwire; tamper-evident, not tamper-proof"
+agent = "sync"
+effect = "stale-heartbeat"
+expect = "detect"
+component = "C5"
