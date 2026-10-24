@@ -1,8 +1,19 @@
 # memory-warden: memory integrity for multi-agent Claude Code
 
+[![tests](https://github.com/Wallisgareth004/memory-warden/actions/workflows/tests.yml/badge.svg)](https://github.com/Wallisgareth004/memory-warden/actions/workflows/tests.yml)
+
 When several agents share one memory (a vault of notes, an index, an append-only log), a subagent can overwrite it, by mistake or because something it read told it to, and a stale copy from a sync tool can quietly roll it back. This guard keeps that memory intact. Subagents can't write protected memory; every tool call's real effect on disk is checked against what was allowed; append-only files survive bad overwrites, with evidence of what happened; the guard can't be switched off mid-session; and a doctor proves all of it is installed and firing.
 
 It is **tamper-evident, not tamper-proof**, and it runs **beside** a command guard and the sandbox, never instead of them (see [What it isn't](#what-it-isnt)).
+
+**Who it's for:** anyone running several Claude Code agents over one shared memory.
+**Measured:** caught 51 of 53 CVE-linked attacks in its own suite (40 prevented, 11 detected), with 0 false positives and 0 false negatives on a 2,000-call replay. 245 tests, standard library only. Details: [Results](#results).
+
+```sh
+git clone https://github.com/Wallisgareth004/memory-warden && cd memory-warden
+bin/test            # 245 tests on synthetic fixtures
+bin/guard attacks   # re-run the 53-case attack suite
+```
 
 ## Install (manual hooks)
 

@@ -1,0 +1,27 @@
+# Runs the test suite on every push to main and every pull request.
+# macOS, because the suite is built and tested there; Python 3.11 (the floor) and 3.14.
+# Actions are pinned to full commit SHAs: checkout v7.0.1, setup-python v7.0.0.
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python }}
+      - run: brew install gitleaks
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest -q
