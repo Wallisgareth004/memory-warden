@@ -15,6 +15,32 @@ bin/test            # 245 tests on synthetic fixtures
 bin/guard attacks   # re-run the 53-case attack suite
 ```
 
+## In 60 seconds
+
+```sh
+git clone https://github.com/Wallisgareth004/memory-warden && cd memory-warden
+bin/guard attacks
+```
+```
+| **all** | **53** | **40** | **11** | **2** |
+
+Caught 51 of 53 (96%): prevented 40, detected 11 (C1 31, C2 8, C3a 1, C3b 2, C4 8, C5 1).
+```
+(The totals from the middle of the report, captured on 5 Nov 2026; the report goes on to name the two misses, as does [What it isn't](#what-it-isnt).)
+
+## How it fits together
+
+```mermaid
+flowchart LR
+    A[agent tool call] --> B[PreToolUse hook<br/>resolve the real path]
+    B -->|protected file| X[blocked]
+    B -->|allowed| C[the call runs]
+    C --> D[PostToolUse hook<br/>fingerprint the effect on disk]
+    D -->|differs from what was allowed| Y[detected and logged]
+    E[append-only log] --> F[tripwire<br/>checks it was only appended to]
+    G[git commit] --> H[commit gate<br/>secret scan + policy]
+```
+
 ## Install (manual hooks)
 
 Needs Python 3.11+ (standard library only) and, for the commit gate, [gitleaks](https://github.com/gitleaks/gitleaks). The code and its command are called `guard`.
